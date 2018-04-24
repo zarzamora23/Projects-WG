@@ -1,0 +1,28 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Filters samples and targets and then mean-centers the targets:
+
+
+## TARGET:atributes: PREREQ
+results/%.filt_cent.RD.txt: data/%.RD.txt
+        set -x
+        mkdir -p $(dirname $target)
+        #Run centerData and apply filters
+        echo "[DEBUGGING] Filtering samples, targets and mean-center targets..."
+	$XHMM --matrix -r $prereq --centerData --centerType target \
+	-o $target.build \
+	--outputExcludedTargets $target.build.filtered_targets.txt \
+	--outputExcludedSamples $target.build.filtered_samples.txt \
+	--minTargetSize 10 --maxTargetSize 10000 \
+	--minMeanTargetRD 10 --maxMeanTargetRD 1000 \
+	--minMeanSampleRD 25 --maxMeanSampleRD 600 \
+	--maxSdSampleRD 400 \
+	&& mv $target.build $target \
+	&& mv $target.build.filtered_targets.txt $target.filtered_targets.txt \
+	&& mv $target.build.filtered_samples.txt $target.filtered_samples.txt	
+
+

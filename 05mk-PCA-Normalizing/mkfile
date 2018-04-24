@@ -1,0 +1,24 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Filters samples and targets and then mean-centers the targets:
+
+
+## TARGET:atributes: PREREQ
+results/%.PCA_normalized.txt: data/%.filt_cent.RD.txt 
+        set -x
+        mkdir -p $(dirname $target)
+	#Normalizes mean-centered data using PCA information:
+	echo "Normalizing mean-centered data using PCA information..."
+	prereq1=data/$stem.filt_cent.RD.txt 
+	prereq2=data/$stem.RD_PCA
+	#echo $target
+	#echo $prereq1
+	#echo $prereq2
+	$XHMM --normalize -r $prereq1 --PCAfiles $prereq2 \
+	--normalizeOutput $target.build \
+	--PCnormalizeMethod PVE_mean --PVE_mean_factor 0.7 \
+	&& mv $target.build $target

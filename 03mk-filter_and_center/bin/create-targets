@@ -1,0 +1,17 @@
+#!/bin/bash
+##
+## DESCRIPTION:
+##      Script to print required mk targets to STDOUT.
+## USAGE:
+##      bin/create-targets
+
+# Obtain depth of coverage file coresponding to one or several samples.
+#
+find -L data/ \
+        -name '*.RD.txt' \
+| sed -r \
+        -e 's#^data/#results/#' \
+        -e 's#.RD.txt$#.filt_cent.RD.txt#g' 
+
+
+ 

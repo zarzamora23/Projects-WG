@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## Este script solo debe de generar las cadenas de caracteres correspondientes a los targets que nos interesan.
+## Ejemplo de un create-targets que genera todos los targets posibles dependiendo de lo que hay en data
+
+##check if the references are replaced or only a new file is added
+find -L references/ \
+	-type f \
+	-name "*.fas" \
+| sed -e "s#.fas#.dict#"

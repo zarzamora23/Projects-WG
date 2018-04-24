@@ -1,0 +1,27 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to Reference Genome, Intervals of interest, executables
+< config.mk
+
+## Calculate depth of coverage
+
+## TARGET:atributes: PREREQ
+results/%.dcov: data/%.bam 
+	set -x
+	mkdir -p $(dirname $target)
+	#Run GATK for depth of coverage:
+	echo "[DEBUGGING] Calculating depth of coverage for one bam file..."
+	java -Xmx3072m -jar $GATK \
+		-T DepthOfCoverage -I $prereq -L $INTERVALS \
+		-R $REFERENCE \
+		-dt BY_SAMPLE -dcov 5000 -l INFO --omitDepthOutputAtEachBase --omitLocusTable \
+		--minBaseQuality 0 --minMappingQuality 20 --start 1 --stop 5000 --nBins 200 \
+		--includeRefNSites \
+		--countType COUNT_FRAGMENTS \
+		-o $target.build \
+	&& mv $target.build.sample_interval_statistics $target.sample_interval_statistics \
+ 	&& mv $target.build.sample_summary $target.sample_summary \
+	&& mv $target.build.sample_statistics $target.sample_statistics \
+	&& mv $target.build.sample_interval_summary $target.sample_interval_summary 
+

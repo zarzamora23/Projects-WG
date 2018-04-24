@@ -1,0 +1,10 @@
+MKSHELL /bin/bash
+
+## TARGET:atributos: PREREQ
+references/%.dict: references/%.fas
+	set -x
+	mkdir -p $(dirname $target)
+	echo "[DEBUGGING] creating a dictionary for the reference genome $prereq"
+	java -jar picard CreateSequenceDictionary R=$prereq O=$target.build \
+&& mv $target.build.dict $target
+

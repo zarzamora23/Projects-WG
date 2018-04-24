@@ -1,0 +1,19 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Filters samples and targets and then mean-centers the targets:
+
+
+## TARGET:atributes: PREREQ
+results/%.RD_PCA: data/%.filt_cent.RD.txt
+        set -x
+        mkdir -p $(dirname $target)
+        #Run PCA on mean-centered data...
+        echo "[DEBUGGING] Running PCA on mean-centered data..."
+	$XHMM --PCA -r $prereq --PCAfiles $target.build \
+	&& mv $target.build.PC_LOADINGS.txt $target.PC_LOADINGS.txt \
+	&& mv $target.build.PC_SD.txt $target.PC_SD.txt \
+	&& mv $target.build.PC.txt $target.PC.txt
