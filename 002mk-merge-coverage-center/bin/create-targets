@@ -1,0 +1,17 @@
+#!/bin/bash
+##
+## DESCRIPTION:
+##      
+##	Script to get a list of Depth of Coverage files to merge and to print required mk targets to STDOUT.
+## USAGE:
+##      bin/create-targets
+
+## Obtain list of sample interval summary files for a group of samples
+
+#
+
+find -L data -mindepth 1 -type d \
+| sed \
+        -e "s#^data/#results/#" \
+        -e "s#\$#.centered.filtered_targets.txt#"
+

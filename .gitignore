@@ -1,0 +1,9 @@
+#ignore data files
+
+*test/
+*data/
+
+#ignore result files
+
+*results/
+

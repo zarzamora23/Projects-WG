@@ -1,0 +1,50 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Filters samples and targets and then mean-centers the targets:
+
+results/%.centered.filtered_targets.txt: results/%.RD.txt
+        set -x
+        mkdir -p $(dirname $target)
+        #Run centerData and apply filters
+        echo "[DEBUGGING] Filtering samples, targets and mean-center targets..."
+        $XHMM --matrix -r $prereq --centerData --centerType target \
+        -o results/$stem.centered.build \
+        --outputExcludedTargets results/$stem.centered.build.filtered_targets.txt \
+        --outputExcludedSamples results/$stem.centered.build.filtered_samples.txt \
+        --minTargetSize 10 --maxTargetSize 10000 \
+        --minMeanTargetRD 10 --maxMeanTargetRD 1000 \
+        --minMeanSampleRD 25 --maxMeanSampleRD 600 \
+        --maxSdSampleRD 400 \
+        && mv results/$stem.centered.build results/$stem.centered \
+        && mv results/$stem.centered.build.filtered_targets.txt results/$stem.centered.filtered_targets.txt \
+        && mv results/$stem.centered.build.filtered_samples.txt results/$stem.centered.filtered_samples.txt
+
+## Combines and transforms GATK Depth-of-Coverage outputs for multiple samples (at same loci) in a list:
+## here the input file is a list with depth of coverage information, this is created when executing the create-targets file
+## Note that in this case it is necessary to apply the parameter --GATKdepthList to indicate the type of input file
+
+## TARGET:atributes: PREREQ
+results/%.RD.txt: results/%.sample_interval_summary.list 
+        set -x
+        mkdir -p $(dirname $target)
+        #Run mergeGATKdepths and transform to xhmm format:
+        echo "[DEBUGGING] Transforming data to xhmm format..."
+        $XHMM \
+		--mergeGATKdepths \
+		-o $target.build \
+		--GATKdepthsList $prereq \
+	&& mv $target.build $target
+
+results/%.sample_interval_summary.list: data/% 
+	set -x
+	mkdir -p $(dirname $target)
+	find \
+		$prereq \
+		-type f \
+		-name "*.sample_interval_summary" > $target.build \
+	&& mv $target.build $target
+

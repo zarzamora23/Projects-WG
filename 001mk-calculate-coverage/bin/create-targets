@@ -1,0 +1,15 @@
+#!/bin/bash
+##
+## DESCRIPTION:
+##      Script to print required mk targets to STDOUT.
+## USAGE:
+##      bin/create-targets
+
+# Obtain bam file coresponding to a sample.
+#
+find -L data/ \
+        -name '*.bam' \
+| sed -r \
+        -e 's#^data/#results/#' \
+        -e 's#.bam$#.sample_interval_summary#g' 
+

@@ -1,1 +1,0 @@
-../../04mk-PCA/results/group1.RD_PCA.PC.txt

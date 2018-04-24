@@ -1,0 +1,15 @@
+#!/bin/bash
+##
+## DESCRIPTION:
+##      Script to print required mk targets to STDOUT.
+## USAGE:
+##      bin/create-targets
+
+# Obtain depth of coverage file coresponding to one or several samples.
+#
+find -L data/ \
+        -name '*.centered' \
+| sed -r \
+        -e 's#^data/#results/#' \
+        -e 's#.centered$#.RD_PCA.PC.txt#g' 
+ 

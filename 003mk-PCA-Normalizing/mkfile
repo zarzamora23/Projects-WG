@@ -1,0 +1,64 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Filters samples and targets and then mean-centers the targets:
+
+
+## TARGET:atributes: PREREQ
+results/%.RD_PCA.PC.txt: data/%.centered
+        set -x
+        mkdir -p $(dirname $target)
+        #Run PCA on mean-centered data...
+        echo "[DEBUGGING] Running PCA on mean-centered data..."
+	$XHMM --PCA -r $prereq --PCAfiles results/$stem.RD_PCA.build \
+	&& mv results/$stem.RD_PCA.build.PC_LOADINGS.txt results/$stem.RD_PCA.PC_LOADINGS.txt \
+	&& mv results/$stem.RD_PCA.build.PC_SD.txt results/$stem.RD_PCA.PC_SD.txt \
+	&& mv results/$stem.RD_PCA.build.PC.txt results/$stem.RD_PCA.PC.txt
+
+## Filters samples and targets and then mean-centers the targets:
+## Requires files produced during the PCA
+## TARGET:atributes: PREREQ
+results/%.PCA_normalized.txt: data/%.centered results/%.RD_PCA.PC_LOADINGS.txt results/%.RD_PCA.PC_SD.txt results/%.RD_PCA.PC.txt
+        set -x
+        mkdir -p $(dirname $target)
+        #Normalizes mean-centered data using PCA information:
+        echo "Normalizing mean-centered data using PCA information..."
+        prereq1=data/$stem.centered
+        prereq2=results/$stem.RD_PCA
+        #echo $target
+        #echo $prereq1
+        #echo $prereq2
+        $XHMM --normalize -r $prereq1 --PCAfiles $prereq2 \
+        --normalizeOutput results/$stem.PCA_normalized.build \
+        --PCnormalizeMethod PVE_mean --PVE_mean_factor 0.7 \
+        && mv results/$stem.PCA_normalized.build results/$stem.PCA_normalized.txt \
+	&& mv results/$stem.PCA_normalized.build.num_removed_PC.txt results/$stem.PCA_normalized.num_removed_PC.txt
+
+
+## Filters and z-score centers (by sample) the PCA-normalized data:
+## TARGET:atributes: PREREQ
+results/%.zscores.PCA.txt: results/%.PCA_normalized.txt  
+	
+	echo "Filtering and get z-scores from PCA-normalized data..."
+	$XHMM --matrix -r $prereq --centerData --centerType sample --zScoreData \
+	-o results/$stem.zscores.PCA.txt \
+	--outputExcludedTargets results/$stem.zscores.PCA.filtered_targets.txt \
+	--outputExcludedSamples results/$stem.zscores.PCA.filtered_samples.txt \
+	--maxSdTargetRD 30
+
+
+#Filters original read-depth data to be the same as filtered, normalized data:
+## TARGET:atributes: PREREQ
+results/$stem.original.normal_filtered.txt: data/%.centered 
+#results/$stem.zscores.PCA.filtered_targets.txt data/%.centered.filtered_samples.txt results/$stem.zscores.PCA.filtered_samples.txt
+#	echo "Filtering original read-depth..."
+#	$XHMM --matrix -r data/%.centered \
+#	--excludeTargets data/%.centered.filtered_targets.txt \
+#	--excludeTargets results/$stem.zscores.PCA.filtered_targets.txt \
+#	--excludeSamples data/%.centered.filtered_samples.txt \
+#	--excludeSamples results/$stem.zscores.PCA.filtered_samples.txt \
+#	-o results/$stem.original.normal_filtered.txt
+
