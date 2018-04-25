@@ -1,0 +1,36 @@
+MKSHELL=/bin/bash
+
+## Load configurations from file
+## Config file contains paths to xhmm executables
+< config.mk
+
+#Genotypes discovered CNVs in all samples:
+results/%.vcf: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt results/%.xcnv 
+	set -x
+        mkdir -p $(dirname $target)
+	#define file with normalized data and zscores
+	prereq1=data/$stem.zscores.PCA.txt
+	#define file with filtered original data
+	prereq2=data/$stem.original.normal_filtered.txt
+	echo "Run xhmm to get geonotypes"
+	$XHMM \
+		--genotype -p $PARAMETERS \
+		-r $prereq1 -R $prereq2 \
+		-g results/$stem.xcnv -F $REFERENCE \
+		-v results/$stem.vcf.build \
+	&&mv results/$stem.vcf.build results/$stem.vcf
+
+#Discovers CNVs in normalized data:
+results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt
+	set -x
+        mkdir -p $(dirname $target)	
+	echo "Discovering CNVs in normalized data..."
+	#define file with normalized data and zscores
+	prereq1=data/$stem.zscores.PCA.txt
+	#define file with filtered original data
+	prereq2=data/$stem.original.normal_filtered.txt
+	$XHMM \
+		--discover -p $PARAMETERS \
+		-r $prereq1 -R $prereq2 \
+		-c results/$stem.xcnv.build -a results/$stem.aux_xcnv \
+	&&mv results/$stem.xcnv.build results/$stem.xcnv

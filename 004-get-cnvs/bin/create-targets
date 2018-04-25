@@ -9,7 +9,9 @@
 #
 
 find -L data/ \
-        -name '*.centered' \
+        -name '*.zscores.PCA.txt' \
 | sed \
         -e "s#^data/#results/#" \
-        -e "s#.centered#.original.normal_filtered.txt#"
+        -e "s#.zscores.PCA.txt#.vcf#"
+
+
