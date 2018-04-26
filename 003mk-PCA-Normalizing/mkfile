@@ -32,7 +32,7 @@ results/%.zscores.PCA.filtered_samples.txt results/%.zscores.PCA.filtered_target
 		-o results/$stem.zscores.PCA.txt.build \
 		--outputExcludedTargets results/$stem.zscores.PCA.filtered_targets.txt.build \
 		--outputExcludedSamples results/$stem.zscores.PCA.filtered_samples.txt.build \
-		--maxSdTargetRD 30 \
+		--maxSdTargetRD 100 \
 	&& mv results/$stem.zscores.PCA.txt.build results/$stem.zscores.PCA.txt \
 	&& mv results/$stem.zscores.PCA.filtered_targets.txt.build results/$stem.zscores.PCA.filtered_targets.txt \
 	&& mv results/$stem.zscores.PCA.filtered_samples.txt.build results/$stem.zscores.PCA.filtered_samples.txt

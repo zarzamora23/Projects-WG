@@ -15,11 +15,14 @@ results/%.centered.filtered_targets.txt: results/%.RD.txt
 		--matrix -r $prereq --centerData --centerType target \
 		-o results/$stem.centered.build \
 		--outputExcludedTargets results/$stem.centered.build.filtered_targets.txt \
-		--outputExcludedSamples results/$stem.centered.build.filtered_samples
-		--minTargetSize 10 --maxTargetSize 10000 \
-		--minMeanTargetRD 10 --maxMeanTargetRD 1000 \
-		--minMeanSampleRD 25 --maxMeanSampleRD 600 \
-		--maxSdSampleRD 400 \
+		--outputExcludedSamples results/$stem.centered.build.filtered_samples.txt \
+		--minTargetSize $MIN_TARGET_SIZE \
+		--maxTargetSize $MAX_TARGET_SIZE \
+		--minMeanTargetRD $MIN_MEAN_TARGET_RD \
+		--maxMeanTargetRD $MAX_MEAN_TARGET_RD \
+		--minMeanSampleRD $MIN_MEAN_SAMPLE_RD \
+		--maxMeanSampleRD $MAX_MEAN_SAMPLE_RD \
+		--maxSdSampleRD $MAX_SD_SAMPLE_RD 2>&1 | tee results/$stem.filtering.output.log \
 	&& mv results/$stem.centered.build results/$stem.centered \
 	&& mv results/$stem.centered.build.filtered_targets.txt results/$stem.centered.filtered_targets.txt \
 	&& mv results/$stem.centered.build.filtered_samples.txt results/$stem.centered.filtered_samples.txt

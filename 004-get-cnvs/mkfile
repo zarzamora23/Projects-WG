@@ -14,14 +14,15 @@ results/%.vcf: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt result
 	prereq2=data/$stem.original.normal_filtered.txt
 	echo "Run xhmm to get geonotypes"
 	$XHMM \
-		--genotype -p $PARAMETERS \
+		--genotype \
+		-p results/$stem.params.txt \
 		-r $prereq1 -R $prereq2 \
 		-g results/$stem.xcnv -F $REFERENCE \
 		-v results/$stem.vcf.build \
 	&&mv results/$stem.vcf.build results/$stem.vcf
 
 #Discovers CNVs in normalized data:
-results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt
+results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt results/%.params.txt
 	set -x
         mkdir -p $(dirname $target)	
 	echo "Discovering CNVs in normalized data..."
@@ -30,7 +31,28 @@ results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt
 	#define file with filtered original data
 	prereq2=data/$stem.original.normal_filtered.txt
 	$XHMM \
-		--discover -p $PARAMETERS \
+		--discover -p results/$stem.params.txt \
 		-r $prereq1 -R $prereq2 \
-		-c results/$stem.xcnv.build -a results/$stem.aux_xcnv \
-	&&mv results/$stem.xcnv.build results/$stem.xcnv
+		-t $QTHRESHOLD \
+		-c results/$stem.xcnv.build \
+		-a results/$stem.aux_xcnv \
+	&& mv results/$stem.xcnv.build results/$stem.xcnv \
+	&& mv results/sample1.xcnv.build.posteriors.DEL.txt results/sample1.xcnv.posteriors.DEL.txt \
+	&& mv results/sample1.xcnv.build.posteriors.DUP.txt results/sample1.xcnv.posteriors.DUP.txt \
+	&& mv results/sample1.xcnv.build.posteriors.DIP.txt results/sample1.xcnv.posteriors.DIP.txt
+		
+
+#create parameter file using values indicated in config.mk file
+results/%.params.txt: data/%.zscores.PCA.txt 
+	set -x
+        mkdir -p $(dirname $target)
+	echo -e '\t' \
+		$EXOME_CNV_RATE '\t' \
+		$MEAN_CNV_TARGETS '\t' \
+		$MEAN_TARGET_DIsTANCE_KBs '\t' \
+		$MEAN_DEL_ZSCORE_DIST '\t' \
+		$SD_DEL_ZSCORE_DIST '\t' \
+		$MEAN_DIP_ZSCORE_DIST '\t' \
+		$SD_DIP_ZSCORE_DIST '\t' \
+		$MEAN_DUP_ZSCORE_DIST '\t' \
+		$SD_DUP_ZSCORE_DIST '\t' > results/$stem.params.txt
