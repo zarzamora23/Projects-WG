@@ -1,11 +1,35 @@
 MKSHELL=/bin/bash
 
+## DESCRIPTION
+##
+## mk module to apply filters to targets and samples according to PCA information using xhmm.
+## It takes filtered and centered data from previous step. The module is necessary to remove potential sequencing biases in the data. 
+## It includes four submodules
+## 1. Obtains a PCA using the filtered data
+## 2. Filters samples and targets and then mean-centers the targets using PCA information
+## 3. Filters and z-score centers (by sample) the PCA-normalized data
+## 4. Filters original read-depth data to be the same as filtered, normalized data
+##
+## The output from this module will be used in the next module to detect CNVs
+## USAGE:
+## Alternative 1: Single target execution.
+##      `mk <SPECIFIC_TARGET>`; where SPECIFIC_TARGET is any line printed by the `/bin/create-targets` script in this module
+## 
+## Alternative 2: Multiple target tandem execution.
+##      `bin/targets | xrags mk`
+##    
+## Alternative 3: Multiple target parallel execution. NOTE: requires HTCondor with the right configuration
+##      `condor submit'
+##  AUTHOR:
+##      Eugenia Zarza (eugenia.zarza@gmail.com), for Winter Genomics (http://www.wintergenomics.com/) - 2018
+
 ## Load configurations from file
 ## Config file contains paths to xhmm executables
 < config.mk
 
-# 01 Filters original read-depth data to be the same as filtered, normalized data:
-## TARGET:atributes: PREREQ
+# Filters original read-depth data to be the same as filtered, normalized data:
+# ============================================
+#
 results/%.original.normal_filtered.txt: data/%.centered data/%.centered.filtered_targets.txt results/%.zscores.PCA.filtered_targets.txt data/%.centered.filtered_samples.txt results/%.zscores.PCA.filtered_samples.txt
 	set -x
         mkdir -p $(dirname $target)
@@ -21,8 +45,9 @@ results/%.original.normal_filtered.txt: data/%.centered data/%.centered.filtered
 		-o results/$stem.original.normal_filtered.txt.build \
 	&& mv results/$stem.original.normal_filtered.txt.build results/$stem.original.normal_filtered.txt
 
-## 02 Filters and z-score centers (by sample) the PCA-normalized data:
-## TARGET:atributes: PREREQ
+# Filters and z-score centers (by sample) the PCA-normalized data:
+# ============================================
+#
 results/%.zscores.PCA.filtered_samples.txt results/%.zscores.PCA.filtered_targets.txt results/%.zscores.PCA.txt: results/%.PCA_normalized.txt
         set -x
         mkdir -p $(dirname $target)
@@ -37,9 +62,9 @@ results/%.zscores.PCA.filtered_samples.txt results/%.zscores.PCA.filtered_target
 	&& mv results/$stem.zscores.PCA.filtered_targets.txt.build results/$stem.zscores.PCA.filtered_targets.txt \
 	&& mv results/$stem.zscores.PCA.filtered_samples.txt.build results/$stem.zscores.PCA.filtered_samples.txt
 
-## 03 Filters samples and targets and then mean-centers the targets:
-## Requires files produced during the PCA
-## TARGET:atributes: PREREQ
+# Filters samples and targets and then mean-centers the targets:
+# ============================================
+#
 results/%.PCA_normalized.num_removed_PC.txt results/%.PCA_normalized.txt: data/%.centered results/%.RD_PCA.PC.txt
         set -x
         mkdir -p $(dirname $target)
@@ -58,8 +83,9 @@ results/%.PCA_normalized.num_removed_PC.txt results/%.PCA_normalized.txt: data/%
 		&& mv results/$stem.PCA_normalized.build results/$stem.PCA_normalized.txt \
 		&& mv results/$stem.PCA_normalized.build.num_removed_PC.txt results/$stem.PCA_normalized.num_removed_PC.txt
 
-## 04 Filters samples and targets and then mean-centers the targets:
-## TARGET:atributes: PREREQ
+# Calculates PCA on centered data
+# ============================================
+#
 results/%.RD_PCA.PC.txt: data/%.centered
 	set -x
 	mkdir -p $(dirname $target)

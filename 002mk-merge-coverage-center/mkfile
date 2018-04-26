@@ -1,11 +1,31 @@
 MKSHELL=/bin/bash
 
+## DESCRIPTION
+## mk module to merge depth of coverage data from multiple samples and apply filters for Quality Control by
+## 1. Creating a list of files to be processed - the files included are the "sample_interval_summary" files produced by GATK
+## 2. Merging the files in the list and tranforming them to the xhmm format
+## 3. Filters samples and targets and then mean-centers the targets. 
+##    Values for the filters applied are specified in the config.mk file in this module
+## 
+## USAGE:
+## Alternative 1: Single target execution.
+##      `mk <SPECIFIC_TARGET>`; where SPECIFIC_TARGET is any line printed by the `/bin/create-targets` script in this module
+##
+## Alternative 2: Multiple target tandem execution.
+##      `bin/targets | xrags mk`
+##
+## Alternative 3: Multiple target parallel execution. NOTE: requires HTCondor with the right configuration
+##      `condor submit'
+##  AUTHOR:
+##      Eugenia Zarza (eugenia.zarza@gmail.com), for Winter Genomics (http://www.wintergenomics.com/) - 2018
+
 ## Load configurations from file
 ## Config file contains paths to xhmm executables
 < config.mk
 
-#Filters samples and targets and then mean-centers the targets:
-
+# Filters samples and targets and then mean-centers the targets:
+# ===============================================================
+#
 results/%.centered.filtered_targets.txt: results/%.RD.txt
         set -x
         mkdir -p $(dirname $target)
@@ -27,11 +47,11 @@ results/%.centered.filtered_targets.txt: results/%.RD.txt
 	&& mv results/$stem.centered.build.filtered_targets.txt results/$stem.centered.filtered_targets.txt \
 	&& mv results/$stem.centered.build.filtered_samples.txt results/$stem.centered.filtered_samples.txt
 
-## Combines and transforms GATK Depth-of-Coverage outputs for multiple samples (at same loci) in a list:
-## here the input file is a list with depth of coverage information, this is created when executing the create-targets file
-## Note that in this case it is necessary to apply the parameter --GATKdepthList to indicate the type of input file
-
-## TARGET:atributes: PREREQ
+# Combines and transforms GATK Depth-of-Coverage outputs for multiple samples (at same loci) in a list:
+# here the input file is a list with depth of coverage information, this is created when executing the create-targets file
+# Note that in this case it is necessary to apply the parameter --GATKdepthList to indicate the type of input file
+# ============================================================
+#
 results/%.RD.txt: results/%.sample_interval_summary.list 
         set -x
         mkdir -p $(dirname $target)
@@ -44,6 +64,8 @@ results/%.RD.txt: results/%.sample_interval_summary.list
 	&& mv $target.build $target
 
 # Create list with "sample_interval_summary" files
+# ============================================================
+#
 results/%.sample_interval_summary.list: data/% 
 	set -x
 	mkdir -p $(dirname $target)

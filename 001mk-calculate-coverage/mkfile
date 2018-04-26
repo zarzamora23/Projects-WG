@@ -1,11 +1,29 @@
 MKSHELL=/bin/bash
 
+## DESCRIPTION
+## mk module for calculating the depth of coverage for one BAM file.
+## This is the first step to detect compy nomber variants (CNVs)
+## The script takes one sorted BAM file and calculates the depth of coverage with GATK.
+## It also requires an interval file (*.bed) for the target loci or the exome, and a reference file with a piccard dictionary  
+
+## USAGE:
+## Alternative 1: Single target execution.
+##	`mk <SPECIFIC_TARGET>`; where SPECIFIC_TARGET is any line printed by the `/bin/create-targets` script in this module
+##
+## Alternative 2: Multiple target tandem execution.
+##	`bin/targets | xrags mk`
+##
+## Alternative 3: Multiple target parallel execution. NOTE: requires HTCondor with the right configuration
+##	`condor submit'
+##  AUTHOR:
+##	Eugenia Zarza (eugenia.zarza@gmail.com), for Winter Genomics (http://www.wintergenomics.com/) - 2018
+
 ## Load configurations from file
 ## Config file contains paths to Reference Genome, Intervals of interest, executables
 < config.mk
 
-## Calculate depth of coverage
-
+# Calculate depth of coverage
+# ===============================================
 ## TARGET:atributes: PREREQ
 results/%.sample_interval_summary: data/%.bam 
 	set -x
@@ -24,4 +42,3 @@ results/%.sample_interval_summary: data/%.bam
 	&& mv results/$stem.build.sample_summary results/$stem.sample_summary \
 	&& mv results/$stem.build.sample_statistics results/$stem.sample_statistics \
 	&& mv results/$stem.build.sample_interval_summary results/$stem.sample_interval_summary 
-

@@ -1,10 +1,33 @@
 MKSHELL=/bin/bash
 
+## DESCRIPTION
+##
+## mk module to call CNVs using a Hidden Markov Model and to create a vcf with the program xhmm. 
+## The parameters of the model should be specified in a parameters file which is created in this module.
+## Parameter values are indicated in the config.mk file. 
+## CNVs call takes into account the quality of the call as indicated by the parameter -t (Quality threshold of variants to be called)
+## This can also be modified in the config.mk file 
+## The module requires read depth data previously normalized with PCA information.
+##
+## USAGE:
+## Alternative 1: Single target execution.
+##      `mk <SPECIFIC_TARGET>`; where SPECIFIC_TARGET is any line printed by the `/bin/create-targets` script in this module
+##
+## Alternative 2: Multiple target tandem execution.
+##      `bin/targets | xrags mk`
+##
+## Alternative 3: Multiple target parallel execution. NOTE: requires HTCondor with the right configuration
+##      `condor submit'
+##  AUTHOR:
+##      Eugenia Zarza (eugenia.zarza@gmail.com), for Winter Genomics (http://www.wintergenomics.com/) - 2018
+
 ## Load configurations from file
 ## Config file contains paths to xhmm executables
 < config.mk
 
-#Genotypes discovered CNVs in all samples:
+# Genotypes discovered CNVs in all samples
+# =========================================
+#
 results/%.vcf: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt results/%.xcnv 
 	set -x
         mkdir -p $(dirname $target)
@@ -21,7 +44,9 @@ results/%.vcf: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt result
 		-v results/$stem.vcf.build \
 	&&mv results/$stem.vcf.build results/$stem.vcf
 
-#Discovers CNVs in normalized data:
+# Discovers CNVs in normalized data
+# =========================================
+#
 results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt results/%.params.txt
 	set -x
         mkdir -p $(dirname $target)	
@@ -42,7 +67,9 @@ results/%.xcnv: data/%.zscores.PCA.txt data/%.original.normal_filtered.txt resul
 	&& mv results/sample1.xcnv.build.posteriors.DIP.txt results/sample1.xcnv.posteriors.DIP.txt
 		
 
-#create parameter file using values indicated in config.mk file
+# create parameter file using values indicated in config.mk file
+# ==========================================
+#
 results/%.params.txt: data/%.zscores.PCA.txt 
 	set -x
         mkdir -p $(dirname $target)
